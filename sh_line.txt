@@ -1,0 +1,75 @@
+import cv2
+import numpy as np
+from PIL import Image
+
+img = cv2.imread("C:/s1.png")
+
+#gray
+h, w, c = img.shape
+gray_s1 = np.zeros((h,w), dtype = np.uint8)
+
+for y in range (0,h):
+    for x in range (0,w):
+        blue = img.item(y,x,0)
+        green = img.item(y,x,1)
+        red = img.item(y,x,2)
+        gray = (int(blue) + int(green) + int(red)) / 3.0
+       
+        gray_s1.itemset(y,x,gray)
+
+#255-f
+hs, ws = gray_s1.shape
+f = np.zeros((hs,ws), dtype = np.uint8)
+f_th = np.zeros((hs,ws), dtype = np.uint8)
+
+
+for i in range (0,hs):
+    for j in range (0,ws):
+        f[i][j] = 255 - gray_s1[i][j]
+for i in range (0,hs):
+    for j in range (0,ws):
+        if f[i][j] > 10:
+            f[i][j] = 255
+        else:
+            f[i][j] = 0
+            
+f[0:3, :] = 0 
+f[hs-3:hs-1, :] = 0 
+f[:, 0:3] = 0 
+f[:, ws-3:ws-1] = 0 
+        
+#thinning
+f_th = cv2.ximgproc.thinning(f)
+
+#filling
+from scipy import ndimage as ndi
+f_fill = ndi.binary_fill_holes(f_th)
+
+hs,ws = f_th.shape
+f_nf = np.zeros((hs,ws), dtype = np.uint8)
+
+for i in range (0,hs):
+    for j in range (0,ws):
+        if f_fill[i][j] == True:
+            f_nf[i][j] = 255
+        else:
+            f_nf[i][j] = 0
+            
+kernel = np.ones((3,3), dtype = np.uint8)
+f_e = cv2.erode(f_nf, kernel, iterations = 1)
+f_d = cv2.dilate(f_e, kernel, iterations = 1)
+f_line = f_nf - f_d
+
+pil_image = Image.fromarray(f_nf)
+pil_image.save('./f_nf.png')
+pil_image = Image.fromarray(f_e)
+pil_image.save('./f_e.png')
+pil_image = Image.fromarray(f_d)
+pil_image.save('./f_d.png')
+pil_image = Image.fromarray(f_line)
+pil_image.save('./f_line.png')
+
+
+cv2.waitKey()
+        
+
