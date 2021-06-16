@@ -1,0 +1,35 @@
+import cv2
+import numpy as np
+
+img = cv2.imread("C:/s2.png")
+h, w, c = img.shape
+gray_s2 = np.zeros((h,w), dtype = np.uint8)
+th_s2 = np.zeros((h,w), dtype = np.uint8)
+
+for y in range (0,h):
+    for x in range (0,w):
+        blue = img.item(y,x,0)
+        green = img.item(y,x,1)
+        red = img.item(y,x,2)
+        gray = (int(blue) + int(green) + int(red)) / 3.0
+       
+        gray_s2.itemset(y,x,gray)
+
+h2, w2 = gray_s2.shape
+
+
+for y2 in range (0,h2):
+   for x2 in range (0,w2):
+       g = gray_s2.item(y2,x2)
+       
+       if g > 150:
+           g = 255
+       else:
+           g = 0
+       th_s2.itemset(y2,x2,g)
+
+cv2.imshow("grays2", gray_s2)
+cv2.imshow("ths2", th_s2)
+
+cv2.waitKey()
+
